@@ -1,7 +1,7 @@
 ------------
 -- Cursor --
 -- Tujuan: Menampilkan nama user sesuai yang memiliki search_key di dalamnya.
--- Udah ada di Web
+-- Udah ada di Web : Untuk search User di
 DELIMITER //
 
 CREATE PROCEDURE search_user_by_keyword(IN search_key VARCHAR(100))
@@ -63,7 +63,7 @@ CALL search_user_by_keyword('A');
 -- Tujuan: Menampilkan total donasi yang terkumpul untuk setiap program dan informasi program terkait.
 -- Ada di web.
 SELECT p.nama_program, 
-       SUM(d.jumlah_donasi) AS total_donasi
+      SUM(d.jumlah_donasi) AS total_donasi
 FROM donasi d
 JOIN program p ON d.id_program = p.id_program
 GROUP BY p.nama_program;
@@ -180,6 +180,7 @@ VALUES
 ----------------------
 -- Stored Procedure --
 -- Tujuan: Menampilkan total donasi yang diterima oleh setiap pengguna untuk program tertentu.
+-- 
 DELIMITER //
 
 CREATE PROCEDURE TotalDonasiPerUser(IN id_program INT)
@@ -207,7 +208,7 @@ DROP PROCEDURE TotalDonasiPerUser;
 
 ---------------------
 -- Stored Function --
-
+-- Done ada di Staff 
 DELIMITER //
 
 CREATE FUNCTION count_anak_by_staff_name(staff_name VARCHAR(100))
@@ -247,6 +248,7 @@ SELECT count_anak_by_staff_name('Budi Santoso') AS TotalAnak;
 ----------
 -- View --
 -- Tujuan: Menampilkan laporan donasi bulanan untuk setiap program.
+-- Done : View di Index
 CREATE VIEW DonasiBulanan AS
 SELECT 
     p.nama_program,

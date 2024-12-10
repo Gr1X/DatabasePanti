@@ -12,7 +12,7 @@ if (!in_array($sort_column, $valid_columns)) {
 }
 $sort_order = ($sort_order == 'DESC') ? 'DESC' : 'ASC';
 
-// Query SQL untuk mengambil data dan mengurutkannya
+// Query SQL untuk mengambil data dan mengurutkannya menggunakan CTE
 $query4 = "
     WITH sorting_data AS (
         SELECT d.id_donasi, u.nama_lengkap AS nama_donatur, u.email, d.tgl_donasi, d.jumlah_donasi, p.nama_program

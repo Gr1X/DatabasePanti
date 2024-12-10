@@ -24,7 +24,6 @@ $query = "
     SELECT * FROM staff_data
     ORDER BY $sort_column $sort_order;
 ";
-
 $result = $conn->query($query);
 
 // Function untuk memanggil jumlah anak berdasarkan nama staff
