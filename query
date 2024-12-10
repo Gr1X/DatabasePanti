@@ -73,7 +73,6 @@ GROUP BY p.nama_program;
 
 
 
-
 ---------------------------------
 -- Windows (Analytic Function) --
 -- Tujuan: Menampilkan jumlah donasi yang diterima setiap bulan beserta total kumulatif donasi per bulan.
@@ -101,41 +100,21 @@ WITH bulan_series AS (
     SELECT 11
     UNION ALL
     SELECT 12
+),
+donasi_per_bulan AS (
+    SELECT 
+        EXTRACT(MONTH FROM d.tgl_donasi) AS bulan,
+        SUM(d.jumlah_donasi) AS total_donasi
+    FROM donasi d
+    GROUP BY EXTRACT(MONTH FROM d.tgl_donasi)
 )
 SELECT 
     b.bulan,
-    COALESCE(SUM(d.jumlah_donasi), 0) AS total_donasi,
-    COALESCE(SUM(d.jumlah_donasi) OVER (ORDER BY b.bulan ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0) AS donasi_kumulatif
+    COALESCE(dpb.total_donasi, 0) AS total_donasi,
+    COALESCE(SUM(dpb.total_donasi) OVER (ORDER BY b.bulan ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0) AS donasi_kumulatif
 FROM bulan_series b
-LEFT JOIN donasi d ON EXTRACT(MONTH FROM d.tgl_donasi) = b.bulan
-GROUP BY b.bulan
+LEFT JOIN donasi_per_bulan dpb ON dpb.bulan = b.bulan
 ORDER BY b.bulan;
-
-
-WITH RECURSIVE AllMonths AS (
-    SELECT 
-        DATE_FORMAT(MIN(tgl_donasi), '%Y-%m-01') AS month_date
-    FROM donasi
-    UNION ALL
-    SELECT DATE_ADD(month_date, INTERVAL 1 MONTH)
-    FROM AllMonths
-    WHERE month_date < LAST_DAY((SELECT MAX(tgl_donasi) FROM donasi))
-),
-MonthlyDonations AS (
-    SELECT 
-        DATE_FORMAT(tgl_donasi, '%Y-%m') AS month,
-        SUM(jumlah_donasi) AS total_donasi
-    FROM donasi
-    GROUP BY DATE_FORMAT(tgl_donasi, '%Y-%m')
-)
-SELECT 
-    DATE_FORMAT(AllMonths.month_date, '%Y-%m') AS month,
-    COALESCE(MonthlyDonations.total_donasi, 0) AS total_donasi,
-    SUM(COALESCE(MonthlyDonations.total_donasi, 0)) OVER (ORDER BY AllMonths.month_date) AS cumulative_donations
-FROM AllMonths
-LEFT JOIN MonthlyDonations ON DATE_FORMAT(AllMonths.month_date, '%Y-%m') = MonthlyDonations.month
-ORDER BY AllMonths.month_date;
-
 
 
 
@@ -143,41 +122,59 @@ ORDER BY AllMonths.month_date;
 
 ------------------------------------
 -- CTE (Common Table Expressions) --
-WITH AnakUmur AS (
-    SELECT 
-        id_anak,
-        nama_anak,
-        tanggal_lahir_anak,
-        jenis_kelamin_anak,
-        pendidikan_anak,
-        TIMESTAMPDIFF(YEAR, tanggal_lahir_anak, CURDATE()) AS umur
-    FROM anak
+-- Tujuan: Untuk mengsortir data dan mengselect semua data yang dibutuhkan.
+WITH sorting_data AS (
+    SELECT d.id_donasi, u.nama_lengkap AS nama_donatur, u.email, d.tgl_donasi, d.jumlah_donasi, p.nama_program
+    FROM donasi d
+    JOIN user u ON d.id_user = u.id_user
+    JOIN program p ON d.id_program = p.id_program
 )
-SELECT * FROM AnakUmur
-ORDER BY umur ASC;
+SELECT * FROM sorting_data
+ORDER BY d.id_donasi ASC;
 
-WITH AnakUmur AS (
-    SELECT 
-        id_anak,
-        nama_anak,
-        tanggal_lahir_anak,
-        jenis_kelamin_anak,
-        pendidikan_anak,
-        TIMESTAMPDIFF(YEAR, tanggal_lahir_anak, CURDATE()) AS umur
-    FROM anak
-)
-SELECT * FROM AnakUmur
-ORDER BY umur DESC;
+
+
+
+
+
+
+
+
 
 
 -------------
 -- Trigger --
+-- Tujuan: Menambahkan log saat ada donasi baru yang tercatat.
+CREATE TABLE donasi_log (
+    id_log INT AUTO_INCREMENT PRIMARY KEY,
+    id_donasi INT,
+    tgl_donasi DATE,
+    id_user INT,
+    jumlah_donasi INT,
+    log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--------------------
+-- Trigger Part 2 --
+DELIMITER //
+
+CREATE TRIGGER log_donasi_insert
+AFTER INSERT ON donasi
+FOR EACH ROW
+BEGIN
+    INSERT INTO donasi_log (id_donasi, tgl_donasi, id_user, jumlah_donasi)
+    VALUES (NEW.id_donasi, NEW.tgl_donasi, NEW.id_user, NEW.jumlah_donasi);
+END//
+
+DELIMITER ;
 
 
+INSERT INTO donasi (jumlah_donasi, tgl_donasi, id_program, id_user)
+VALUES
+    (250000, '2024-12-11', 3, 2);
+    
 
-
-
-
+    (100000, '2024-12-11', 2, 5);
 
 
 
@@ -249,7 +246,3 @@ GROUP BY p.nama_program, EXTRACT(MONTH FROM d.tgl_donasi);
 
 -- Untuk melihat data dari view
 SELECT * FROM DonasiBulanan;
-
-
-
-
