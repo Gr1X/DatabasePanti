@@ -1,0 +1,37 @@
+-- Cursor & Procedure --
+
+DELIMITER //
+
+CREATE PROCEDURE TampilkanAnakPerBulan(IN input_bulan INT)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE nama_anak VARCHAR(100);
+    DECLARE tgl_lahir_anak DATE;
+
+    DECLARE cursor_anak CURSOR FOR 
+        SELECT nama_anak, tanggal_lahir_anak 
+        FROM anak
+        WHERE MONTH(tanggal_lahir_anak) = 1;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cursor_anak;
+
+    anak_loop: LOOP
+        FETCH cursor_anak INTO nama_anak, tgl_lahir_anak;
+        IF done THEN
+            LEAVE anak_loop;
+        END IF;
+
+        SELECT nama_anak AS 'Nama Anak', tgl_lahir_anak AS 'Tanggal Lahir';
+    END LOOP;
+
+    CLOSE cursor_anak;
+END//
+
+DELIMITER ;
+
+
+CALL TampilkanAnakPerBulan(1);
+
+DROP PROCEDURE TampilkanAnakPerBulan;
