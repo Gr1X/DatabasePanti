@@ -1,3 +1,46 @@
+<?php
+require_once('db.php');
+
+// Query untuk mendapatkan total donasi per bulan, termasuk bulan tanpa donasi
+$query6 = "
+    WITH RECURSIVE AllMonths AS (
+        SELECT 
+            DATE_FORMAT(MIN(tgl_donasi), '%Y-%m-01') AS month_date
+        FROM donasi
+        UNION ALL
+        SELECT DATE_ADD(month_date, INTERVAL 1 MONTH)
+        FROM AllMonths
+        WHERE month_date < LAST_DAY((SELECT MAX(tgl_donasi) FROM donasi))
+    ),
+    MonthlyDonations AS (
+        SELECT 
+            DATE_FORMAT(tgl_donasi, '%Y-%m') AS month,
+            SUM(jumlah_donasi) AS total_donasi
+        FROM donasi
+        GROUP BY DATE_FORMAT(tgl_donasi, '%Y-%m')
+    )
+    SELECT 
+        DATE_FORMAT(AllMonths.month_date, '%Y-%m') AS month,
+        COALESCE(MonthlyDonations.total_donasi, 0) AS total_donasi
+    FROM AllMonths
+    LEFT JOIN MonthlyDonations ON DATE_FORMAT(AllMonths.month_date, '%Y-%m') = MonthlyDonations.month
+    ORDER BY AllMonths.month_date;
+";
+
+$result = $conn->query($query6);
+
+$total_donations_amount = 0; 
+$donation_data = []; 
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $donation_data[] = $row;
+        $total_donations_amount += $row['total_donasi'];
+    }
+}
+$conn->close();
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,15 +121,15 @@
         <div class="bg-gray-800 p-6 rounded-lg shadow">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-white">Rp 450.385</h1>
-                    <p class="text-sm text-white">Total Donasi Per Bulan</p>
+                    <h1 class="text-2xl font-bold text-white">Rp <?php echo number_format($total_donations_amount, 0, ',', '.'); ?></h1>
+                    <p class="text-sm text-white">Total Donasi</p>
                 </div>
             </div>
 
             <canvas id="salesChart" class="mt-4"></canvas>
 
             <div class="flex justify-between text-sm text-white mt-4">
-                <span>Dalam 1 Bulan Terakhir</span>
+                <span>Dalam 1 Tahun Terakhir</span>
                 <a href="#" class="text-custom-200 hover:underline"></a>
             </div>
         </div>
@@ -266,48 +309,50 @@
 
 
     // Statistik Grafik
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['01 Feb', '02 Feb', '03 Feb', '04 Feb', '05 Feb', '06 Feb', '07 Feb'],
-                datasets: [
-                    {
-                        label: 'Revenue',
-                        data: [6200, 6100, 6050, 6400, 6300, 6200, 6100],
-                        borderColor: '#668C64',
-                        backgroundColor: 'rgba(102, 140, 100, 0.5)',
-                        tension: 0.4,
-                    },
-                    {
-                        label: 'Revenue (previous period)',
-                        data: [6600, 6650, 6620, 6500, 6450, 6400, 6350],
-                        borderColor: '#DEAE48',
-                        backgroundColor: 'rgba(222, 174, 72, 0.5)',
-                        tension: 0.4,
-                    },
-                ],
+        // Data hasil query PHP
+const donationData = <?php echo json_encode($donation_data); ?>;
+
+// Ekstrak data untuk grafik
+const labels = donationData.map(data => data.month); // Bulan
+const totalDonations = donationData.map(data => data.total_donasi); // Total donasi
+
+// Statistik Grafik Total Donasi
+const ctx = document.getElementById('salesChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels, // Label sumbu X
+        datasets: [
+            {
+                label: 'Total Donasi',
+                data: totalDonations,
+                borderColor: '#668C64',
+                backgroundColor: 'rgba(102, 140, 100, 0.5)',
+                tension: 0.4,
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: {
-                            color: '#FFFDF1',
-                        },
-                    },
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#FFFDF1' },
-                    },
-                    y: {
-                        ticks: { color: '#FFFDF1' },
-                    },
+        ],
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: '#FFFDF1',
                 },
             },
-        });
+        },
+        scales: {
+            x: {
+                ticks: { color: '#FFFDF1' },
+            },
+            y: {
+                ticks: { color: '#FFFDF1' },
+            },
+        },
+    },
+});
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>
 </body>
