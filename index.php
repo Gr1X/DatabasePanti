@@ -21,7 +21,9 @@ $query6 = "
     )
     SELECT 
         DATE_FORMAT(AllMonths.month_date, '%Y-%m') AS month,
-        COALESCE(MonthlyDonations.total_donasi, 0) AS total_donasi
+        COALESCE(MonthlyDonations.total_donasi, 0) AS total_donasi,
+        SUM(COALESCE(MonthlyDonations.total_donasi, 0)) 
+            OVER (ORDER BY AllMonths.month_date) AS cumulative_donations
     FROM AllMonths
     LEFT JOIN MonthlyDonations ON DATE_FORMAT(AllMonths.month_date, '%Y-%m') = MonthlyDonations.month
     ORDER BY AllMonths.month_date;
@@ -98,7 +100,6 @@ $conn->close();
         }
     }
 </script>
-
 
 <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -200,7 +201,7 @@ $conn->close();
         </div>
     </div>
 
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800 mx-4 mb-10">
+    <!-- <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800 mx-4 mb-10">
         <div class="items-center justify-between lg:flex">
             <div class="mb-4 lg:mb-0">
                 <h3 class="mb-2 text-xl font-bold text-gray-900 dark:text-white">Table Panti</h3>
@@ -320,43 +321,44 @@ $conn->close();
                   </div>
               </div>
           </div>
-        </div>
+        </div> -->
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const tables = ["table-transactions", "table-donations", "table-staff"];
-    const titles = ["Transactions", "Donations", "Staff"];
-    let currentIndex = 0;
+    //   const tables = ["table-transactions", "table-donations", "table-staff"];
+    // const titles = ["Transactions", "Donations", "Staff"];
+    // let currentIndex = 0;
 
-    document.getElementById("btn-prev").addEventListener("click", function () {
-        currentIndex = (currentIndex - 1 + tables.length) % tables.length;
-        updateTable();
-    });
+    // document.getElementById("btn-prev").addEventListener("click", function () {
+    //     currentIndex = (currentIndex - 1 + tables.length) % tables.length;
+    //     updateTable();
+    // });
 
-    document.getElementById("btn-next").addEventListener("click", function () {
-        currentIndex = (currentIndex + 1) % tables.length;
-        updateTable();
-    });
+    // document.getElementById("btn-next").addEventListener("click", function () {
+    //     currentIndex = (currentIndex + 1) % tables.length;
+    //     updateTable();
+    // });
 
-    function updateTable() {
-        tables.forEach((id, index) => {
-            const table = document.getElementById(id);
-            table.classList.toggle("hidden", index !== currentIndex);
-        });
-        document.getElementById("table-title").textContent = titles[currentIndex];
-    }
+    // function updateTable() {
+    //     tables.forEach((id, index) => {
+    //         const table = document.getElementById(id);
+    //         table.classList.toggle("hidden", index !== currentIndex);
+    //     });
+    //     document.getElementById("table-title").textContent = titles[currentIndex];
+    // }
 
 
     // Statistik Grafik
-        // Data hasil query PHP
+// Data hasil query PHP
 const donationData = <?php echo json_encode($donation_data); ?>;
 
 // Ekstrak data untuk grafik
 const labels = donationData.map(data => data.month); // Bulan
 const totalDonations = donationData.map(data => data.total_donasi); // Total donasi
+const cumulativeDonations = donationData.map(data => data.cumulative_donations); // Donasi kumulatif
 
-// Statistik Grafik Total Donasi
+// Statistik Grafik Total dan Kumulatif Donasi
 const ctx = document.getElementById('salesChart').getContext('2d');
 new Chart(ctx, {
     type: 'line',
@@ -364,10 +366,17 @@ new Chart(ctx, {
         labels: labels, // Label sumbu X
         datasets: [
             {
-                label: 'Total Donasi',
+                label: 'Total Donasi per Bulan',
                 data: totalDonations,
                 borderColor: '#668C64',
                 backgroundColor: 'rgba(102, 140, 100, 0.5)',
+                tension: 0.4,
+            },
+            {
+                label: 'Donasi Kumulatif',
+                data: cumulativeDonations,
+                borderColor: '#DEAE48',
+                backgroundColor: 'rgba(222, 174, 72, 0.5)',
                 tension: 0.4,
             },
         ],
@@ -392,6 +401,7 @@ new Chart(ctx, {
         },
     },
 });
+
 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3"></script>

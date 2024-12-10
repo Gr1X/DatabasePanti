@@ -78,6 +78,11 @@ $result = $conn->query($query);
         <div class="mb-4">
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All Staff</h1>
         </div>
+        <!-- Form untuk pencarian -->
+        <form method="GET" class="flex items-center space-x-3">
+            <input type="text" name="search" class="block w-full px-4 py-2 border rounded-lg text-gray-900" placeholder="Search staff..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+            <button type="submit" class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">Search</button>
+        </form>
     </div>
 </div>
 
