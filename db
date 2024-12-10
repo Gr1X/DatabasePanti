@@ -1,37 +1,38 @@
 -- Tabel bidang
 CREATE TABLE bidang (
     id_bidang INT AUTO_INCREMENT PRIMARY KEY,
-    bidang_pengurus VARCHAR(50)
+    bidang_pengurus VARCHAR(50) NOT NULL
 );
 
 -- Tabel staff
 CREATE TABLE staff (
     id_staff INT AUTO_INCREMENT PRIMARY KEY,
-    nama_lengkap VARCHAR(100),
-    no_telp VARCHAR(15),
-    jenis_kelamin CHAR(1),
-    alamat VARCHAR(255),
-    id_bidang INT,
+    nama_lengkap VARCHAR(100) NOT NULL,
+    no_telp VARCHAR(15) NOT NULL,
+    jenis_kelamin CHAR(1) NOT NULL,
+    alamat VARCHAR(255) NOT NULL,
+    id_bidang INT NOT NULL,
     FOREIGN KEY (id_bidang) REFERENCES bidang(id_bidang)
 );
 
 -- Tabel user
 CREATE TABLE user (
     id_user INT AUTO_INCREMENT PRIMARY KEY,
-    nama_lengkap VARCHAR(100),
-    no_telp VARCHAR(15),
-    jenis_kelamin CHAR(1)
+    nama_lengkap VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    no_telp VARCHAR(15) NOT NULL,
+    jenis_kelamin CHAR(1) NOT NULL
 );
 
 -- Tabel anak
 CREATE TABLE anak (
     id_anak INT AUTO_INCREMENT PRIMARY KEY,
-    nama_anak VARCHAR(100),
-    tanggal_lahir_anak DATE,
-    jenis_kelamin_anak CHAR(1),
-    pendidikan_anak VARCHAR(10),
-    id_staff_sosial INT,
-    id_staff_pendidikan INT,
+    nama_anak VARCHAR(100) NOT NULL,
+    tanggal_lahir_anak DATE NOT NULL,
+    jenis_kelamin_anak CHAR(1) NOT NULL,
+    pendidikan_anak VARCHAR(10) NOT NULL,
+    id_staff_sosial INT NOT NULL,
+    id_staff_pendidikan INT NOT NULL,
     FOREIGN KEY (id_staff_sosial) REFERENCES staff(id_staff),
     FOREIGN KEY (id_staff_pendidikan) REFERENCES staff(id_staff)
 );
@@ -39,16 +40,16 @@ CREATE TABLE anak (
 -- Tabel program
 CREATE TABLE program (
     id_program INT AUTO_INCREMENT PRIMARY KEY,
-    nama_program VARCHAR(100)
+    nama_program VARCHAR(100) NOT NULL
 );
 
 -- Tabel donasi
 CREATE TABLE donasi (
     id_donasi INT AUTO_INCREMENT PRIMARY KEY,
-    jumlah_donasi INT,
-    tgl_donasi DATE,
-    id_program INT,
-    id_user INT,
+    jumlah_donasi INT NOT NULL,
+    tgl_donasi DATE NOT NULL,
+    id_program INT NOT NULL,
+    id_user INT NOT NULL,
     FOREIGN KEY (id_program) REFERENCES program(id_program),
     FOREIGN KEY (id_user) REFERENCES user(id_user)
 );
