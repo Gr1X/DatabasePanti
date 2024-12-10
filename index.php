@@ -264,6 +264,8 @@
         document.getElementById("table-title").textContent = titles[currentIndex];
     }
 
+
+    // Statistik Grafik
         const ctx = document.getElementById('salesChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
