@@ -73,7 +73,6 @@ GROUP BY p.nama_program;
 
 
 
-
 ---------------------------------
 -- Windows (Analytic Function) --
 -- Tujuan: Menampilkan jumlah donasi yang diterima setiap bulan beserta total kumulatif donasi per bulan.
