@@ -1,7 +1,16 @@
 <?php
 require_once('db.php');
 
-// Gunakan Common Table Expression (CTE) untuk menghitung umur
+// Default sorting column and order
+$sort_column = isset($_GET['sort_column']) ? $_GET['sort_column'] : 'umur';
+$sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'ASC';
+
+// Handle invalid sort order
+if ($sort_order !== 'ASC' && $sort_order !== 'DESC') {
+    $sort_order = 'ASC';
+}
+
+// Use Common Table Expression (CTE) to calculate age
 $baseQuery = "
     WITH AnakUmur AS (
         SELECT 
@@ -15,19 +24,11 @@ $baseQuery = "
     )
 ";
 
-$query1 = $baseQuery . " SELECT * FROM AnakUmur";
-
-$query2 = $baseQuery . " SELECT * FROM AnakUmur ORDER BY umur ASC";
-
-$query3 = $baseQuery . " SELECT * FROM AnakUmur ORDER BY umur DESC";
-
-if (isset($_GET['sort']) && $_GET['sort'] === 'asc') {
-    $query = $query2; 
-} elseif (isset($_GET['sort']) && $_GET['sort'] === 'desc') {
-    $query = $query3;
-} else {
-    $query = $query1;
-}
+// Query for sorting by age or other columns
+$query = $baseQuery . " 
+    SELECT * FROM AnakUmur
+    ORDER BY $sort_column $sort_order
+";
 
 $result = $conn->query($query);
 
@@ -48,12 +49,13 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Admin Dashboard - Anak</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
+<body>
 <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <div class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -85,70 +87,78 @@ $conn->close();
         </div>
     </div>
 </nav>
-<body>
-    <div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <div class="w-full mb-1">
-            <div class="mb-4">
-                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All Anak</h1>
-            </div>
-            <div class="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
-                <div class="relative inline-block text-left">
-                    <button id="dropdownButton" data-dropdown-toggle="dropdown" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
-                        Filter Data
-                        <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l5-5 5 5M5 15l5-5 5 5" />
-                        </svg>
-                    </button>
-                    <!-- Dropdown menu -->
-                    <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownButton">
-                            <li>
-                                <a href="anak.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Semua Data</a>
-                            </li>
-                            <li>
-                                <a href="anak.php?sort=asc" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Urutkan Umur ASC</a>
-                            </li>
-                            <li>
-                                <a href="anak.php?sort=desc" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Urutkan Umur DESC</a>
-                            </li>
-                        </ul>
-                    </div>
+
+<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+    <div class="w-full mb-1">
+        <div class="mb-4">
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All Anak</h1>
+        </div>
+        <div class="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
+            <div class="relative inline-block text-left">
+                <button id="dropdownButton" data-dropdown-toggle="dropdown" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">
+                    Filter Data
+                    <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l5-5 5 5M5 15l5-5 5 5" />
+                    </svg>
+                </button>
+                <!-- Dropdown menu -->
+                <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownButton">
+                        <li><a href="anak.php" class="block px-4 py-2">Semua Data</a></li>
+                        <li><a href="anak.php?sort=asc" class="block px-4 py-2">Urutkan Umur ASC</a></li>
+                        <li><a href="anak.php?sort=desc" class="block px-4 py-2">Urutkan Umur DESC</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-    <div class="flex flex-col">
-        <div class="overflow-x-auto">
-            <div class="inline-block min-w-full align-middle">
-                <div class="overflow-hidden shadow">
-                    <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                        <thead class="bg-gray-100 dark:bg-gray-700">
-                            <tr>
-                                <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">ID</th>
-                                <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Nama</th>
-                                <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Tanggal Lahir</th>
-                                <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Umur</th>
-                                <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Jenis Kelamin</th>
-                                <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Pendidikan Anak</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                            <?php foreach ($data_anak as $anak): ?>
-                                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 text-white">
-                                    <td class="p-4"><?= htmlspecialchars($anak['id_anak']) ?></td>
-                                    <td class="p-4"><?= htmlspecialchars($anak['nama_anak']) ?></td>
-                                    <td class="p-4"><?= htmlspecialchars($anak['tanggal_lahir_anak']) ?></td>
-                                    <td class="p-4"><?= htmlspecialchars($anak['umur']) ?> tahun</td>
-                                    <td class="p-4"><?= htmlspecialchars($anak['jenis_kelamin_anak']) ?></td>
-                                    <td class="p-4"><?= htmlspecialchars($anak['pendidikan_anak']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
+</div>
+
+<div class="flex flex-col">
+    <div class="overflow-x-auto">
+        <div class="inline-block min-w-full align-middle">
+            <div class="overflow-hidden shadow">
+                <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            ID Anak
+                        </th>
+                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Nama Anak
+                        </th>
+                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Tanggal Lahir
+                        </th>
+                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Umur
+                        </th>
+                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Jenis Kelamin
+                        </th>
+                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Pendidikan Anak
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    <?php foreach ($data_anak as $anak): ?>
+                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <td class="p-4 text-white"><?= htmlspecialchars($anak['id_anak']) ?></td>
+                            <td class="p-4 text-white"><?= htmlspecialchars($anak['nama_anak']) ?></td>
+                            <td class="p-4 text-white"><?= htmlspecialchars($anak['tanggal_lahir_anak']) ?></td>
+                            <td class="p-4 text-white"><?= htmlspecialchars($anak['umur']) ?> tahun</td>
+                            <td class="p-4 text-white"><?= htmlspecialchars($anak['jenis_kelamin_anak']) ?></td>
+                            <td class="p-4 text-white"><?= htmlspecialchars($anak['pendidikan_anak']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>      
+                </table>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 </body>
 </html>
