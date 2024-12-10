@@ -1,48 +1,47 @@
 <?php
 require_once('db.php');
 
-// Default sorting column and order
-$sort_column = isset($_GET['sort_column']) ? $_GET['sort_column'] : 'umur';
+// Menentukan kolom dan arah sorting
+$sort_column = isset($_GET['sort_column']) ? $_GET['sort_column'] : 'id_anak';
 $sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'ASC';
 
-// Handle invalid sort order
-if ($sort_order !== 'ASC' && $sort_order !== 'DESC') {
-    $sort_order = 'ASC';
+// Validasi kolom dan arah pengurutan
+$valid_columns = ['id_anak', 'nama_anak', 'tanggal_lahir_anak', 'umur', 'jenis_kelamin_anak', 'pendidikan_anak'];
+if (!in_array($sort_column, $valid_columns)) {
+    $sort_column = 'id_anak';
 }
+$sort_order = ($sort_order == 'DESC') ? 'DESC' : 'ASC';
 
-// Use Common Table Expression (CTE) to calculate age
-$baseQuery = "
-    WITH AnakUmur AS (
+// Query SQL dengan umur dan sorting
+$query = "
+    WITH anak_data AS (
         SELECT 
-            id_anak,
-            nama_anak,
-            tanggal_lahir_anak,
-            jenis_kelamin_anak,
-            pendidikan_anak,
-            TIMESTAMPDIFF(YEAR, tanggal_lahir_anak, CURDATE()) AS umur
+            id_anak, 
+            nama_anak, 
+            tanggal_lahir_anak, 
+            TIMESTAMPDIFF(YEAR, tanggal_lahir_anak, CURDATE()) AS umur,
+            jenis_kelamin_anak, 
+            pendidikan_anak
         FROM anak
     )
-";
-
-// Query for sorting by age or other columns
-$query = $baseQuery . " 
-    SELECT * FROM AnakUmur
-    ORDER BY $sort_column $sort_order
+    SELECT * 
+    FROM anak_data
+    ORDER BY $sort_column $sort_order;
 ";
 
 $result = $conn->query($query);
 
+// Simpan hasil query ke dalam array
 $data_anak = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $data_anak[] = $row;
     }
-} else {
-    echo "Tidak ada data anak ditemukan.";
 }
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -75,10 +74,10 @@ $conn->close();
                 <a href="index.php" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Dashboard</a>
             </li>
             <li>
-                <a href="userdata.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">User & Donasi</a>
+                <a href="staff.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">User & Donasi</a>
             </li>
             <li>
-                <a href="staff.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Staff</a>
+                <a href="userdata.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Staff</a>
             </li>
             <li>
                 <a href="anak.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Anak</a>
@@ -93,24 +92,6 @@ $conn->close();
         <div class="mb-4">
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All Anak</h1>
         </div>
-        <div class="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
-            <div class="relative inline-block text-left">
-                <button id="dropdownButton" data-dropdown-toggle="dropdown" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">
-                    Filter Data
-                    <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l5-5 5 5M5 15l5-5 5 5" />
-                    </svg>
-                </button>
-                <!-- Dropdown menu -->
-                <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownButton">
-                        <li><a href="anak.php" class="block px-4 py-2">Semua Data</a></li>
-                        <li><a href="anak.php?sort=asc" class="block px-4 py-2">Urutkan Umur ASC</a></li>
-                        <li><a href="anak.php?sort=desc" class="block px-4 py-2">Urutkan Umur DESC</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -119,40 +100,48 @@ $conn->close();
         <div class="inline-block min-w-full align-middle">
             <div class="overflow-hidden shadow">
                 <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                <thead class="bg-gray-100 dark:bg-gray-700">
-                    <tr>
-                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                            ID Anak
-                        </th>
-                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                            Nama Anak
-                        </th>
-                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                            Tanggal Lahir
-                        </th>
-                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                            Umur
-                        </th>
-                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                            Jenis Kelamin
-                        </th>
-                        <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                            Pendidikan Anak
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                    <?php foreach ($data_anak as $anak): ?>
-                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <td class="p-4 text-white"><?= htmlspecialchars($anak['id_anak']) ?></td>
-                            <td class="p-4 text-white"><?= htmlspecialchars($anak['nama_anak']) ?></td>
-                            <td class="p-4 text-white"><?= htmlspecialchars($anak['tanggal_lahir_anak']) ?></td>
-                            <td class="p-4 text-white"><?= htmlspecialchars($anak['umur']) ?> tahun</td>
-                            <td class="p-4 text-white"><?= htmlspecialchars($anak['jenis_kelamin_anak']) ?></td>
-                            <td class="p-4 text-white"><?= htmlspecialchars($anak['pendidikan_anak']) ?></td>
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                <a href="?sort_column=id_anak&sort_order=<?php echo ($sort_column == 'id_anak' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                    ID Anak <?php echo ($sort_column == 'id_anak') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                </a>
+                            </th>
+                            <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                <a href="?sort_column=nama_anak&sort_order=<?php echo ($sort_column == 'nama_anak' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                    Nama Anak <?php echo ($sort_column == 'nama_anak') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                </a>
+                            </th>
+                            <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                <a href="?sort_column=tanggal_lahir_anak&sort_order=<?php echo ($sort_column == 'tanggal_lahir_anak' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                    Tanggal Lahir <?php echo ($sort_column == 'tanggal_lahir_anak') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                </a>
+                            </th>
+                            <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                <a href="?sort_column=umur&sort_order=<?php echo ($sort_column == 'umur' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                    Umur <?php echo ($sort_column == 'umur') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                </a>
+                            </th>
+                            <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                Jenis Kelamin
+                            </th>
+                            <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                Pendidikan Anak
+                            </th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>      
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        <?php foreach ($data_anak as $anak): ?>
+                            <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <td class="p-4 text-gray-900 dark:text-white"><?php echo htmlspecialchars($anak['id_anak']); ?></td>
+                                <td class="p-4 text-gray-900 dark:text-white"><?php echo htmlspecialchars($anak['nama_anak']); ?></td>
+                                <td class="p-4 text-gray-900 dark:text-white"><?php echo htmlspecialchars($anak['tanggal_lahir_anak']); ?></td>
+                                <td class="p-4 text-gray-900 dark:text-white"><?php echo htmlspecialchars($anak['umur']); ?> tahun</td>
+                                <td class="p-4 text-gray-900 dark:text-white"><?php echo htmlspecialchars($anak['jenis_kelamin_anak']); ?></td>
+                                <td class="p-4 text-gray-900 dark:text-white"><?php echo htmlspecialchars($anak['pendidikan_anak']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>      
                 </table>
             </div>
         </div>

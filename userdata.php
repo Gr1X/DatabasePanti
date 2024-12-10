@@ -1,17 +1,5 @@
 <?php
-// Koneksi ke database
-$servername = "localhost"; // ganti dengan server Anda
-$username = "root";        // ganti dengan username database Anda
-$password = "";            // ganti dengan password database Anda
-$dbname = "panti";         // ganti dengan nama database Anda
-
-// Membuat koneksi
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Cek koneksi
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once('db.php');
 
 // Menentukan kolom dan arah sorting
 $sort_column = isset($_GET['sort_column']) ? $_GET['sort_column'] : 'id_donasi';
@@ -148,12 +136,12 @@ $result1 = $conn->query($query4);
                                 // Loop melalui hasil dan tampilkan dalam tabel
                                 while($row = $result1->fetch_assoc()) {
                                     echo "<tr class='hover:bg-gray-100 dark:hover:bg-gray-700'>";
-                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['id_donasi'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['nama_donatur'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['email'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['tgl_donasi'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['jumlah_donasi'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['nama_program'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['id_donasi'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['nama_donatur'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['email'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap '>" . $row['tgl_donasi'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap '>" . $row['jumlah_donasi'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['nama_program'] . "</td>";
                                     echo "</tr>";
                                 }
                             } else {
