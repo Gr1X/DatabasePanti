@@ -1,66 +1,96 @@
+<?php
+// Koneksi ke database
+$servername = "localhost"; // ganti dengan server Anda
+$username = "root";        // ganti dengan username database Anda
+$password = "";            // ganti dengan password database Anda
+$dbname = "panti";         // ganti dengan nama database Anda
+
+// Membuat koneksi
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Cek koneksi
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Menentukan kolom dan arah sorting
+$sort_column = isset($_GET['sort_column']) ? $_GET['sort_column'] : 'id_donasi';
+$sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'ASC';
+
+// Validasi kolom dan arah pengurutan
+$valid_columns = ['id_donasi', 'nama_donatur', 'email', 'tgl_donasi', 'jumlah_donasi', 'nama_program'];
+if (!in_array($sort_column, $valid_columns)) {
+    $sort_column = 'id_donasi';
+}
+$sort_order = ($sort_order == 'DESC') ? 'DESC' : 'ASC';
+
+// Query SQL untuk mengambil data dan mengurutkannya
+$query4 = "
+    WITH sorting_data AS (
+        SELECT d.id_donasi, u.nama_lengkap AS nama_donatur, u.email, d.tgl_donasi, d.jumlah_donasi, p.nama_program
+        FROM donasi d
+        JOIN user u ON d.id_user = u.id_user
+        JOIN program p ON d.id_program = p.id_program
+    )
+    SELECT * FROM sorting_data
+    ORDER BY $sort_column $sort_order;
+";
+
+$result1 = $conn->query($query4);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>User & Donasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
-<nav class="bg-white border-gray-200 dark:bg-gray-900">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <div class="flex items-center space-x-3 rtl:space-x-reverse">
-            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Admin Dashboard</span>
-        </div>
-        <div class="">
-            <button data-collapse-toggle="navbar-user" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-user" aria-expanded="false">
-                <span class="sr-only">Open main menu</span>
-                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-                </svg>
-            </button>
-        </div>
-        <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
-            <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-            <li>
-                <a href="index.php" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Dashboard</a>
-            </li>
-            <li>
-                <a href="userdata.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">User & Donasi</a>
-            </li>
-            <li>
-                <a href="staff.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Staff</a>
-            </li>
-            <li>
-                <a href="anak.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Anak</a>
-            </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 <body>
+    <nav class="bg-white border-gray-200 dark:bg-gray-900">
+        <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+            <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Admin Dashboard</span>
+            </div>
+            <div class="">
+                <button data-collapse-toggle="navbar-user" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-user" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
+                <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+                <li>
+                    <a href="index.php" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Dashboard</a>
+                </li>
+                <li>
+                    <a href="userdata.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">User & Donasi</a>
+                </li>
+                <li>
+                    <a href="staff.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Staff</a>
+                </li>
+                <li>
+                    <a href="anak.php" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Anak</a>
+                </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div class="w-full mb-1">
             <div class="mb-4">
-                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All User & Donasi </h1>
-            </div>
-            <div class="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
-                <div class="flex items-center mb-4 sm:mb-0">
-                    <form class="sm:pr-3" action="#" method="GET">
-                        <label for="products-search" class="sr-only">Search</label>
-                        <div class="relative w-48 mt-1 sm:w-64 xl:w-96">
-                            <input type="text" name="email" id="products-search" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search for products">
-                        </div>
-                    </form>
-                </div>
-                <!-- <button id="createProductButton" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800" type="button" data-drawer-target="drawer-create-product-default" data-drawer-show="drawer-create-product-default" aria-controls="drawer-create-product-default" data-drawer-placement="right">
-                    Add new product
-                </button> -->
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All User & Donasi</h1>
             </div>
         </div>
     </div>
+
     <div class="flex flex-col">
         <div class="overflow-x-auto">
             <div class="inline-block min-w-full align-middle">
@@ -68,44 +98,79 @@
                     <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                         <thead class="bg-gray-100 dark:bg-gray-700">
                             <tr>
+                                <!-- ID Donasi -->
                                 <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    ID
+                                    <a href="?sort_column=id_donasi&sort_order=<?php echo ($sort_column == 'id_donasi' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                        ID Donasi <?php echo ($sort_column == 'id_donasi') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                    </a>
                                 </th>
+
+                                <!-- Nama Donatur -->
                                 <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    Nama
+                                    <a href="?sort_column=nama_donatur&sort_order=<?php echo ($sort_column == 'nama_donatur' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                        Nama Donatur <?php echo ($sort_column == 'nama_donatur') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                    </a>
                                 </th>
+
+                                <!-- Email -->
                                 <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    Email
+                                    <a href="?sort_column=email&sort_order=<?php echo ($sort_column == 'email' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                        Email <?php echo ($sort_column == 'email') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                    </a>
                                 </th>
+
+                                <!-- Tanggal Donasi -->
                                 <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    No Telp
+                                    <a href="?sort_column=tgl_donasi&sort_order=<?php echo ($sort_column == 'tgl_donasi' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                        Tanggal Donasi <?php echo ($sort_column == 'tgl_donasi') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                    </a>
                                 </th>
+
+                                <!-- Jumlah Donasi -->
                                 <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    Jenis Kelamin
+                                    <a href="?sort_column=jumlah_donasi&sort_order=<?php echo ($sort_column == 'jumlah_donasi' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                        Jumlah Donasi <?php echo ($sort_column == 'jumlah_donasi') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                    </a>
                                 </th>
+
+                                <!-- Nama Program -->
                                 <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    Actions
+                                    <a href="?sort_column=nama_program&sort_order=<?php echo ($sort_column == 'nama_program' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                        Nama Program <?php echo ($sort_column == 'nama_program') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                    </a>
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                            <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
-                                    <div class="text-base font-semibold text-gray-900 dark:text-white">ID</div>  
-                                </td>
-                                <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">Nama</td>
-                                <td class="max-w-sm p-4 overflow-hidden text-base font-normal text-gray-500 truncate xl:max-w-xs dark:text-gray-400">Email</td>
-                                <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">No. Telp</td>
-                                <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">Jenis_kelamin</td>
-                                <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">See More
-                                </td> 
-                            </tr>
-                        
+                            <?php
+                            // Periksa apakah ada data yang ditemukan
+                            if ($result1->num_rows > 0) {
+                                // Loop melalui hasil dan tampilkan dalam tabel
+                                while($row = $result1->fetch_assoc()) {
+                                    echo "<tr class='hover:bg-gray-100 dark:hover:bg-gray-700'>";
+                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['id_donasi'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['nama_donatur'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['email'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['tgl_donasi'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['jumlah_donasi'] . "</td>";
+                                    echo "<td class='p-4 text-sm font-normal text-white-500 whitespace-nowrap dark:text-gray-400'>" . $row['nama_program'] . "</td>";
+                                    echo "</tr>";
+                                }
+                            } else {
+                                echo "<tr><td colspan='6' class='p-4 text-center text-gray-500'>No data found</td></tr>";
+                            }
+                            ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+    <?php
+    // Menutup koneksi
+    $conn->close();
+    ?>
+
 </body>
 </html>

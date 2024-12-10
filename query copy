@@ -214,4 +214,3 @@ GROUP BY p.nama_program, EXTRACT(MONTH FROM d.tgl_donasi);
 
 -- Untuk melihat data dari view
 SELECT * FROM DonasiBulanan;
-
