@@ -27,6 +27,37 @@ $query6 = "
     ORDER BY AllMonths.month_date;
 ";
 
+$query_transaksi = "
+    SELECT 
+        dl.id_donasi, 
+        dl.jumlah_donasi, 
+        dl.log_timestamp, 
+        p.nama_program
+    FROM donasi_log dl
+    JOIN donasi d ON d.id_donasi = dl.id_donasi
+    JOIN program p ON d.id_program = p.id_program
+    ORDER BY dl.log_timestamp DESC
+    LIMIT 5;
+";
+
+$query_counts = "
+    SELECT 
+        (SELECT COUNT(*) FROM user) AS total_user,
+        (SELECT COUNT(*) FROM anak) AS total_anak,
+        (SELECT COUNT(*) FROM staff) AS total_staff;
+";
+
+$result_counts = $conn->query($query_counts);
+$count_data = $result_counts->fetch_assoc();
+
+$result_transaksi = $conn->query($query_transaksi);
+$transaksi_data = [];
+if ($result_transaksi->num_rows > 0) {
+    while ($row = $result_transaksi->fetch_assoc()) {
+        $transaksi_data[] = $row;
+    }
+}
+
 $result = $conn->query($query6);
 
 $total_donations_amount = 0; 
@@ -105,15 +136,21 @@ $conn->close();
     <div class="grid grid-cols-3 gap-4 m-4 mb-2">
         <div class="bg-gray-800 p-4 rounded-lg shadow">
             <h3 class="text-sm font-medium text-gray-400">User</h3>
-            <p class="text-3xl font-bold text-white mt-2">234</p>
+            <p class="text-3xl font-bold text-white mt-2">
+                <?php echo number_format($count_data['total_user'], 0, ',', '.'); ?>
+            </p>
         </div>
         <div class="bg-gray-800 p-4 rounded-lg shadow">
             <h3 class="text-sm font-medium text-gray-400">Anak</h3>
-            <p class="text-3xl font-bold text-white mt-2">34</p>
+            <p class="text-3xl font-bold text-white mt-2">
+                <?php echo number_format($count_data['total_anak'], 0, ',', '.'); ?>
+            </p>
         </div>
         <div class="bg-gray-800 p-4 rounded-lg shadow">
             <h3 class="text-sm font-medium text-gray-400">Staff</h3>
-            <p class="text-3xl font-bold text-white mt-2">13</p>
+            <p class="text-3xl font-bold text-white mt-2">
+                <?php echo number_format($count_data['total_staff'], 0, ',', '.'); ?>
+            </p>
         </div>
     </div>
 
@@ -136,22 +173,29 @@ $conn->close();
 
         <div class="bg-gray-800 p-6 rounded-lg shadow">
             <div class="flex items-center justify-between">
-                <h1 class="text-lg font-bold text-white">Transaksi</h1>
+                <h1 class="text-lg font-bold text-white">Transaksi Terbaru</h1>
             </div>
             <div class="mt-4">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-4">
-                        <img src="https://via.placeholder.com/50" alt="Product" class="w-10 h-10 rounded border border-custom-75">
-                        <div>
-                            <h2 class="text-sm font-semibold text-white">Nama Program</h2>
+                <?php if (count($transaksi_data) > 0): ?>
+                    <?php foreach ($transaksi_data as $transaksi): ?>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-4">
+                                <img src="https://via.placeholder.com/50" alt="Program" class="w-10 h-10 rounded border border-custom-75">
+                                <div>
+                                    <h2 class="text-sm font-semibold text-white"><?php echo htmlspecialchars($transaksi['nama_program']); ?></h2>
+                                    <p class="text-xs text-white"><?php echo date('d M Y, H:i', strtotime($transaksi['log_timestamp'])); ?></p>
+                                </div>
+                            </div>
+                            <span class="text-lg font-bold text-white">Rp <?php echo number_format($transaksi['jumlah_donasi'], 0, ',', '.'); ?></span>
                         </div>
-                    </div>
-                    <span class="text-lg font-bold text-white">Rp 445,467</span>
-                </div>
-                <div class="flex justify-between text-sm text-white mt-4">
-                    <span>Dalam 7 Hari terakhir</span>
-                    <a href="#" class="text-custom-200 hover:underline">Lihat selengkapnya</a>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-white">Tidak ada transaksi terbaru.</p>
+                <?php endif; ?>
+            </div>
+            <div class="flex justify-between text-sm text-white mt-4">
+                <span>Dalam 7 Hari terakhir</span>
+                <a href="#" class="text-custom-200 hover:underline">Lihat selengkapnya</a>
             </div>
         </div>
     </div>
@@ -173,7 +217,6 @@ $conn->close();
         </div>
 
         <div class="flex flex-col mt-6">
-          <!-- Header dengan tombol slider -->
           <div class="flex justify-between items-center">
               <h3 id="table-title" class="text-xl font-bold text-gray-900 dark:text-white">Transactions</h3>
               <div class="flex space-x-2">
@@ -190,9 +233,8 @@ $conn->close();
               </div>
           </div>
 
-          <!-- Kontainer tabel dengan slider -->
+          
           <div id="table-container" class="mt-6">
-              <!-- Tabel Transactions -->
               <div id="table-transactions" class="table-slide">
                   <div class="overflow-x-auto rounded-lg">
                       <div class="inline-block min-w-full align-middle">
@@ -226,7 +268,6 @@ $conn->close();
                   </div>
               </div>
 
-              <!-- Tabel Donations -->
               <div id="table-donations" class="table-slide hidden">
                   <div class="overflow-x-auto rounded-lg">
                       <div class="inline-block min-w-full align-middle">
@@ -252,7 +293,6 @@ $conn->close();
                   </div>
               </div>
 
-              <!-- Tabel Staff -->
               <div id="table-staff" class="table-slide hidden">
                   <div class="overflow-x-auto rounded-lg">
                       <div class="inline-block min-w-full align-middle">
