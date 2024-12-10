@@ -203,6 +203,27 @@ DROP PROCEDURE TotalDonasiPerUser;
 ---------------------
 -- Stored Function --
 
+DELIMITER //
+
+CREATE FUNCTION count_anak_by_staff_name(staff_name VARCHAR(100))
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE total_anak INT;
+
+    -- Hitung jumlah anak yang diasuh oleh staff berdasarkan nama
+    SELECT COUNT(*)
+    INTO total_anak
+    FROM anak a
+    JOIN staff s ON a.id_staff_sosial = s.id_staff OR a.id_staff_pendidikan = s.id_staff
+    WHERE s.nama_lengkap = staff_name;
+
+    RETURN total_anak;
+END//
+
+DELIMITER ;
+
+SELECT count_anak_by_staff_name('Budi Santoso') AS TotalAnak;
 
 
 
