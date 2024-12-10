@@ -100,15 +100,23 @@ WITH bulan_series AS (
     SELECT 11
     UNION ALL
     SELECT 12
+),
+donasi_per_bulan AS (
+    SELECT 
+        EXTRACT(MONTH FROM d.tgl_donasi) AS bulan,
+        SUM(d.jumlah_donasi) AS total_donasi
+    FROM donasi d
+    GROUP BY EXTRACT(MONTH FROM d.tgl_donasi)
 )
 SELECT 
     b.bulan,
-    COALESCE(SUM(d.jumlah_donasi), 0) AS total_donasi,
-    COALESCE(SUM(d.jumlah_donasi) OVER (ORDER BY b.bulan ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0) AS donasi_kumulatif
+    COALESCE(dpb.total_donasi, 0) AS total_donasi,
+    COALESCE(SUM(dpb.total_donasi) OVER (ORDER BY b.bulan ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0) AS donasi_kumulatif
 FROM bulan_series b
-LEFT JOIN donasi d ON EXTRACT(MONTH FROM d.tgl_donasi) = b.bulan
-GROUP BY b.bulan
+LEFT JOIN donasi_per_bulan dpb ON dpb.bulan = b.bulan
 ORDER BY b.bulan;
+
+
 
 
 
@@ -206,7 +214,4 @@ GROUP BY p.nama_program, EXTRACT(MONTH FROM d.tgl_donasi);
 
 -- Untuk melihat data dari view
 SELECT * FROM DonasiBulanan;
-
-
-
 
