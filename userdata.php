@@ -25,6 +25,23 @@ $query4 = "
 ";
 
 $result1 = $conn->query($query4);
+
+// cursor
+$search_result = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['search_key'])) {
+    $search_key = $_POST['search_key'];
+
+    $stmt = $conn->prepare("CALL search_user_by_keyword(?)");
+    $stmt->bind_param("s", $search_key);
+    $stmt->execute();
+
+    // Ambil hasil dari stored procedure
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $search_result[] = $row['Search Result'];
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -34,8 +51,6 @@ $result1 = $conn->query($query4);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User & Donasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
 <body>
@@ -72,80 +87,61 @@ $result1 = $conn->query($query4);
     </nav>
 
     <div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <div class="w-full mb-1">
-            <div class="mb-4">
-                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All User & Donasi</h1>
-            </div>
+        <div>
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">All User & Donasi</h1>
         </div>
+        <form action="" method="POST" class="mt-4 sm:mt-0">
+            <div class="flex items-center">
+                <input type="text" name="search_key" placeholder="Cari nama user..." class="p-2 border border-gray-300 rounded-lg">
+                <button type="submit" class="ml-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Cari</button>
+            </div>
+        </form>
     </div>
 
-    <div class="flex flex-col">
+    <?php if (!empty($search_result)): ?>
+        <div class="p-4 bg-gray-50 border rounded-lg text-gray-800 dark:bg-gray-700 dark:text-white">
+            <h2 class="text-lg font-bold mb-2">Hasil Pencarian:</h2>
+            <ul>
+                <?php foreach ($search_result as $result): ?>
+                    <li><?php echo htmlspecialchars($result); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+        <div class="p-4 bg-gray-50 border rounded-lg text-gray-800 dark:bg-gray-700 dark:text-white">
+            <p>No Data Found</p>
+        </div>
+    <?php endif; ?>
+
+    <div class="flex flex-col mt-6">
         <div class="overflow-x-auto">
             <div class="inline-block min-w-full align-middle">
                 <div class="overflow-hidden shadow">
                     <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                         <thead class="bg-gray-100 dark:bg-gray-700">
                             <tr>
-                                <!-- ID Donasi -->
-                                <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    <a href="?sort_column=id_donasi&sort_order=<?php echo ($sort_column == 'id_donasi' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
-                                        ID Donasi <?php echo ($sort_column == 'id_donasi') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
-                                    </a>
-                                </th>
-
-                                <!-- Nama Donatur -->
-                                <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    <a href="?sort_column=nama_donatur&sort_order=<?php echo ($sort_column == 'nama_donatur' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
-                                        Nama Donatur <?php echo ($sort_column == 'nama_donatur') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
-                                    </a>
-                                </th>
-
-                                <!-- Email -->
-                                <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    <a href="?sort_column=email&sort_order=<?php echo ($sort_column == 'email' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
-                                        Email <?php echo ($sort_column == 'email') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
-                                    </a>
-                                </th>
-
-                                <!-- Tanggal Donasi -->
-                                <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    <a href="?sort_column=tgl_donasi&sort_order=<?php echo ($sort_column == 'tgl_donasi' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
-                                        Tanggal Donasi <?php echo ($sort_column == 'tgl_donasi') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
-                                    </a>
-                                </th>
-
-                                <!-- Jumlah Donasi -->
-                                <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    <a href="?sort_column=jumlah_donasi&sort_order=<?php echo ($sort_column == 'jumlah_donasi' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
-                                        Jumlah Donasi <?php echo ($sort_column == 'jumlah_donasi') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
-                                    </a>
-                                </th>
-
-                                <!-- Nama Program -->
-                                <th scope="col" class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                    <a href="?sort_column=nama_program&sort_order=<?php echo ($sort_column == 'nama_program' && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
-                                        Nama Program <?php echo ($sort_column == 'nama_program') ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
-                                    </a>
-                                </th>
+                                <?php foreach ($valid_columns as $column): ?>
+                                    <th class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                        <a href="?sort_column=<?php echo $column; ?>&sort_order=<?php echo ($sort_column == $column && $sort_order == 'ASC') ? 'DESC' : 'ASC'; ?>">
+                                            <?php echo ucfirst(str_replace('_', ' ', $column)); ?>
+                                            <?php echo ($sort_column == $column) ? ($sort_order == 'ASC' ? '↑' : '↓') : ''; ?>
+                                        </a>
+                                    </th>
+                                <?php endforeach; ?>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                             <?php
-                            // Periksa apakah ada data yang ditemukan
                             if ($result1->num_rows > 0) {
-                                // Loop melalui hasil dan tampilkan dalam tabel
-                                while($row = $result1->fetch_assoc()) {
+                                while ($row = $result1->fetch_assoc()) {
                                     echo "<tr class='hover:bg-gray-100 dark:hover:bg-gray-700'>";
-                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['id_donasi'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['nama_donatur'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['email'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap '>" . $row['tgl_donasi'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap '>" . $row['jumlah_donasi'] . "</td>";
-                                    echo "<td class='p-4 text-sm font-normal text-white whitespace-nowrap'>" . $row['nama_program'] . "</td>";
+                                    foreach ($valid_columns as $column) {
+                                        echo "<td class='p-4 text-sm font-normal text-gray-900 dark:text-white'>" . htmlspecialchars($row[$column]) . "</td>";
+                                    }
                                     echo "</tr>";
                                 }
                             } else {
-                                echo "<tr><td colspan='6' class='p-4 text-center text-gray-500'>No data found</td></tr>";
+                                echo "<tr><td colspan='" . count($valid_columns) . "' class='p-4 text-center text-gray-500'>No data found</td></tr>";
                             }
                             ?>
                         </tbody>
@@ -155,10 +151,6 @@ $result1 = $conn->query($query4);
         </div>
     </div>
 
-    <?php
-    // Menutup koneksi
-    $conn->close();
-    ?>
-
+    <?php $conn->close(); ?>
 </body>
 </html>

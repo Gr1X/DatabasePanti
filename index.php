@@ -1,6 +1,8 @@
 <?php
 require_once('db.php');
 
+
+// Time
 // Query untuk mendapatkan total donasi per bulan, termasuk bulan tanpa donasi
 $query6 = "
     WITH RECURSIVE AllMonths AS (
@@ -48,6 +50,22 @@ $query_counts = "
         (SELECT COUNT(*) FROM anak) AS total_anak,
         (SELECT COUNT(*) FROM staff) AS total_staff;
 ";
+
+// View DonasiBulan
+$query7 = "SELECT nama_program, bulan, total_donasi FROM DonasiBulanan ORDER BY nama_program, bulan;";
+$result = $conn->query($query7);
+
+$data_donasi = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $program = $row['nama_program'];
+        $bulan = $row['bulan'];
+        $total_donasi = $row['total_donasi'];
+
+        $data_donasi[$program][$bulan] = $total_donasi;
+    }
+}
+
 
 $result_counts = $conn->query($query_counts);
 $count_data = $result_counts->fetch_assoc();
@@ -194,10 +212,33 @@ $conn->close();
                     <p class="text-white">Tidak ada transaksi terbaru.</p>
                 <?php endif; ?>
             </div>
-            <div class="flex justify-between text-sm text-white mt-4">
-                <span>Dalam 7 Hari terakhir</span>
-                <a href="#" class="text-custom-200 hover:underline">Lihat selengkapnya</a>
-            </div>
+        </div>
+    </div>
+    
+    <div class="p-6 bg-gray-800 rounded-lg shadow mx-4">
+    <h1 class="text-lg font-bold text-white">Statistik Donasi Bulanan</h1>
+        <div class="mt-4 space-y-4">
+            <?php foreach ($data_donasi as $program => $bulan_donasi): ?>
+                <div class="p-4 bg-white rounded-lg shadow dark:bg-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><?= htmlspecialchars($program) ?></h2>
+                    <table class="min-w-full mt-2 divide-y divide-gray-200 dark:divide-gray-600">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th scope="col" class="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Bulan</th>
+                                <th scope="col" class="p-3 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">Total Donasi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                            <?php foreach ($bulan_donasi as $bulan => $total): ?>
+                                <tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+                                    <td class="p-3 text-sm text-gray-900 dark:text-white"><?= htmlspecialchars($bulan) ?></td>
+                                    <td class="p-3 text-sm text-gray-900 dark:text-white">Rp <?= number_format($total, 0, ',', '.') ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 

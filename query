@@ -1,6 +1,7 @@
 ------------
 -- Cursor --
 -- Tujuan: Menampilkan nama user sesuai yang memiliki search_key di dalamnya.
+-- Udah ada di Web
 DELIMITER //
 
 CREATE PROCEDURE search_user_by_keyword(IN search_key VARCHAR(100))
@@ -60,6 +61,7 @@ CALL search_user_by_keyword('A');
 ---------------------------------------
 -- Select (Group By, Join, Subquery) --
 -- Tujuan: Menampilkan total donasi yang terkumpul untuk setiap program dan informasi program terkait.
+-- Ada di web.
 SELECT p.nama_program, 
        SUM(d.jumlah_donasi) AS total_donasi
 FROM donasi d
@@ -76,6 +78,7 @@ GROUP BY p.nama_program;
 ---------------------------------
 -- Windows (Analytic Function) --
 -- Tujuan: Menampilkan jumlah donasi yang diterima setiap bulan beserta total kumulatif donasi per bulan.
+-- Ada di Web
 WITH RECURSIVE AllMonths AS (
     SELECT 
         DATE_FORMAT(MIN(tgl_donasi), '%Y-%m-01') AS month_date
@@ -109,6 +112,7 @@ ORDER BY AllMonths.month_date;
 ------------------------------------
 -- CTE (Common Table Expressions) --
 -- Tujuan: Untuk mengsortir data dan mengselect semua data yang dibutuhkan.
+-- Ada di Web
 WITH sorting_data AS (
     SELECT d.id_donasi, u.nama_lengkap AS nama_donatur, u.email, d.tgl_donasi, d.jumlah_donasi, p.nama_program
     FROM donasi d
@@ -131,6 +135,7 @@ ORDER BY d.id_donasi ASC;
 -------------
 -- Trigger --
 -- Tujuan: Menambahkan log saat ada donasi baru yang tercatat.
+-- Ada di Web
 CREATE TABLE donasi_log (
     id_log INT AUTO_INCREMENT PRIMARY KEY,
     id_donasi INT,
@@ -180,7 +185,7 @@ DELIMITER //
 CREATE PROCEDURE TotalDonasiPerUser(IN id_program INT)
 BEGIN
     SELECT u.nama_lengkap, 
-           SUM(d.jumlah_donasi) AS total_donasi
+      SUM(d.jumlah_donasi) AS total_donasi
     FROM donasi d
     JOIN user u ON d.id_user = u.id_user
     WHERE d.id_program = id_program
