@@ -1,0 +1,116 @@
+-- Tabel bidang
+CREATE TABLE bidang (
+    id_bidang INT AUTO_INCREMENT PRIMARY KEY,
+    bidang_pengurus VARCHAR(50)
+);
+
+-- Tabel staff
+CREATE TABLE staff (
+    id_staff INT AUTO_INCREMENT PRIMARY KEY,
+    nama_lengkap VARCHAR(100),
+    no_telp VARCHAR(15),
+    jenis_kelamin CHAR(1),
+    alamat VARCHAR(255),
+    id_bidang INT,
+    FOREIGN KEY (id_bidang) REFERENCES bidang(id_bidang)
+);
+
+-- Tabel user
+CREATE TABLE user (
+    id_user INT AUTO_INCREMENT PRIMARY KEY,
+    nama_lengkap VARCHAR(100),
+    no_telp VARCHAR(15),
+    jenis_kelamin CHAR(1)
+);
+
+-- Tabel anak
+CREATE TABLE anak (
+    id_anak INT AUTO_INCREMENT PRIMARY KEY,
+    nama_anak VARCHAR(100),
+    tanggal_lahir_anak DATE,
+    jenis_kelamin_anak CHAR(1),
+    pendidikan_anak VARCHAR(10),
+    id_staff_sosial INT,
+    id_staff_pendidikan INT,
+    FOREIGN KEY (id_staff_sosial) REFERENCES staff(id_staff),
+    FOREIGN KEY (id_staff_pendidikan) REFERENCES staff(id_staff)
+);
+
+-- Tabel program
+CREATE TABLE program (
+    id_program INT AUTO_INCREMENT PRIMARY KEY,
+    nama_program VARCHAR(100)
+);
+
+-- Tabel donasi
+CREATE TABLE donasi (
+    id_donasi INT AUTO_INCREMENT PRIMARY KEY,
+    jumlah_donasi INT,
+    tgl_donasi DATE,
+    id_program INT,
+    id_user INT,
+    FOREIGN KEY (id_program) REFERENCES program(id_program),
+    FOREIGN KEY (id_user) REFERENCES user(id_user)
+);
+
+INSERT INTO bidang (bidang_pengurus)
+VALUES 
+('Pendidikan'),
+('Kesehatan'),
+('Sosial');
+
+INSERT INTO staff (nama_lengkap, no_telp, jenis_kelamin, alamat, id_bidang)
+VALUES
+('Budi Santoso', '081992347561', 'L', 'Jl. Benteng Betawi No. 23, RT 02/RW 03, Kel. X', 1),
+('Rina Kartika', '08288811234', 'P', 'Jl. KH Hasyim Ashari No. 12, RT 04/RW 05, Kel. Y', 1),
+('Siti Aisyah', '082117350913', 'P', 'Jl. Maulana Hasanuddin No. 45, RT 06/RW 08, Kel. Z', 2),
+('Andi Wijaya', '081275623489', 'L', 'Jl. Jenderal Sudirman No. 89, RT 01/RW 02, Kel. W', 3),
+('Rizka Amelia', '08173456271', 'P', 'Jl. MH Thamrin No. 34, RT 03/RW 04, Kel. Q', 3);
+
+INSERT INTO user (nama_lengkap, no_telp, jenis_kelamin)
+VALUES
+('Eka Prasetya', '081123445678', 'L'),
+('Hana Kusuma', '082298745612', 'P'),
+('Galih Saputra', '081985234671', 'L'),
+('Dinda Kurnia', '081273562890', 'P'),
+('Arief Pratama', '08169456728', 'L'),
+('Fitria Yuliana', '082934561297', 'P'),
+('Chandra Wijaya', '081078345612', 'L'),
+('Bella Santika', '081465432789', 'P');
+
+INSERT INTO anak (nama_anak, tanggal_lahir_anak, jenis_kelamin_anak, pendidikan_anak, id_staff_sosial, id_staff_pendidikan)
+VALUES
+('Andi Pratama', '2010-05-12', 'L', 'SD', 4, 1),
+('Dewi Lestari', '2012-07-15', 'P', 'SD', 5, 1),
+('Ferdinan Susanto', '2011-01-07', 'L', 'SD', 4, 1),
+('Firman Hidayat', '2012-01-05', 'L', 'SD', 4, 1),
+('Dina Amelia', '2012-01-15', 'P', 'SD', 5, 1),
+('Putri Lestari', '2011-03-18', 'P', 'SD', 5, 1),
+('Rudi Hartono', '2007-08-25', 'L', 'SMP', 4, 2),
+('Muhammad Rizky', '2006-10-15', 'L', 'SMP', 4, 2),
+('Andini', '2008-07-01', 'P', 'SMP', 5, 2),
+('Hana Salsabila', '2006-08-14', 'P', 'SMP', 5, 2),
+('Irwan Nugroho', '2009-02-22', 'L', 'SMP', 4, 2),
+('Dimas Prayoga', '2008-11-18', 'L', 'SMP', 4, 2),
+('Aldi Ramadhan', '2008-01-27', 'L', 'SMP', 4, 2);
+
+INSERT INTO program (nama_program)
+VALUES
+('Program Panti Asuhan'),
+('Program Beasiswa'),
+('Program Kesehatan');
+
+INSERT INTO donasi (jumlah_donasi, tgl_donasi, id_program, id_user)
+VALUES
+(100000, '2024-03-15', 3, 1),
+(150000, '2024-01-27', 1, 2),
+(50000, '2024-07-05', 2, 2),
+(75000, '2024-06-11', 3, 3),
+(100000, '2024-06-22', 1, 1),
+(200000, '2024-04-19', 3, 4),
+(120000, '2024-06-28', 5, 5),
+(80000, '2024-07-02', 6, 6),
+(100000, '2024-04-03', 7, 7),
+(120000, '2024-08-27', 8, 8),
+(120000, '2024-10-17', 3, 3),
+(120000, '2024-12-01', 1, 1);
