@@ -9,7 +9,6 @@ CREATE TABLE staff (
     id_staff INT AUTO_INCREMENT PRIMARY KEY,
     nama_lengkap VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255) NOT NULL,
     no_telp VARCHAR(15) NOT NULL,
     jenis_kelamin CHAR(1) NOT NULL,
     alamat VARCHAR(255) NOT NULL,
@@ -62,24 +61,24 @@ VALUES
 ('Kesehatan'),
 ('Sosial');
 
-INSERT INTO staff (nama_lengkap, no_telp, jenis_kelamin, alamat, id_bidang)
+INSERT INTO staff (nama_lengkap, email, no_telp, jenis_kelamin, alamat, id_bidang)
 VALUES
-('Budi Santoso', '081992347561', 'L', 'Jl. Benteng Betawi No. 23, RT 02/RW 03, Kel. Sukasari, Tangerang, Banten', 1),
-('Rina Kartika', '08288811234', 'P', 'Jl. KH Hasyim Ashari No. 12, RT 04/RW 05, Kel. Poris Plawad, Tangerang, Banten', 1),
-('Siti Aisyah', '082117350913', 'P', 'Jl. Maulana Hasanuddin No. 45, RT 06/RW 07, Kel. Cipondoh, Tangerang, Banten', 2),
-('Andi Wijaya', '081275623489', 'L', 'Jl. Jenderal Sudirman No. 89, RT 01/RW 02, Kel. Babakan, Tangerang, Banten', 3),
-('Rizka Amelia', '08173456271', 'P', 'Jl. MH Thamrin No. 34, RT 03/RW 04, Kel. Cikokol, Tangerang, Banten', 3);
+('Budi Santoso', 'butoso82@gmail.com', '081992347561', 'L', 'Jl. Benteng Betawi No. 23, RT 02/RW 03, Kel. Sukasari, Tangerang, Banten', 1),
+('Rina Kartika', 'kartikarin@gmail.com', '08288811234', 'P', 'Jl. KH Hasyim Ashari No. 12, RT 04/RW 05, Kel. Poris Plawad, Tangerang, Banten', 1),
+('Siti Aisyah', 'aisyahsiti2@yahoo.com', '082117350913', 'P', 'Jl. Maulana Hasanuddin No. 45, RT 06/RW 07, Kel. Cipondoh, Tangerang, Banten', 2),
+('Andi Wijaya', 'andwi1984@gmail.com', '081275623489', 'L', 'Jl. Jenderal Sudirman No. 89, RT 01/RW 02, Kel. Babakan, Tangerang, Banten', 3),
+('Rizka Amelia', 'amelrizka1@gmail.com', '08173456271', 'P', 'Jl. MH Thamrin No. 34, RT 03/RW 04, Kel. Cikokol, Tangerang, Banten', 3);
 
-INSERT INTO user (nama_lengkap, no_telp, jenis_kelamin)
+INSERT INTO user (nama_lengkap, email, no_telp, jenis_kelamin)
 VALUES
-('Eka Prasetya', '081123445678', 'L'),
-('Hana Kusuma', '082298745612', 'P'),
-('Galih Saputra', '081985234671', 'L'),
-('Dinda Kurnia', '081273562890', 'P'),
-('Arief Pratama', '08169456728', 'L'),
-('Fitria Yuliana', '082934561297', 'P'),
-('Chandra Wijaya', '081078345612', 'L'),
-('Bella Santika', '081465432789', 'P');
+('Eka Prasetya', 'eka90pras@gmail.com', '081123445678', 'L'),
+('Hana Kusuma', 'hanakusuma98@gmail.com', '082298745612', 'P'),
+('Galih Saputra', 'galihsaput1989@gmail.com', '081985234671', 'L'),
+('Dinda Kurnia', 'dindakurn1a@gmail.com', '081273562890', 'P'),
+('Arief Pratama', 'ariefpratama0@yahoo.com', '08169456728', 'L'),
+('Fitria Yuliana', 'fitria12yuliana@gmail.com', '082934561297', 'P'),
+('Chandra Wijaya', 'chanwijaya94@gmail.com', '081078345612', 'L'),
+('Bella Santika', 'bellasan1996@gmail.com', '081465432789', 'P');
 
 INSERT INTO anak (nama_anak, tanggal_lahir_anak, jenis_kelamin_anak, pendidikan_anak, id_staff_sosial, id_staff_pendidikan)
 VALUES
