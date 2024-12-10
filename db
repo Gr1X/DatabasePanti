@@ -61,11 +61,11 @@ VALUES
 
 INSERT INTO staff (nama_lengkap, no_telp, jenis_kelamin, alamat, id_bidang)
 VALUES
-('Budi Santoso', '081992347561', 'L', 'Jl. Benteng Betawi No. 23, RT 02/RW 03, Kel. X', 1),
-('Rina Kartika', '08288811234', 'P', 'Jl. KH Hasyim Ashari No. 12, RT 04/RW 05, Kel. Y', 1),
-('Siti Aisyah', '082117350913', 'P', 'Jl. Maulana Hasanuddin No. 45, RT 06/RW 08, Kel. Z', 2),
-('Andi Wijaya', '081275623489', 'L', 'Jl. Jenderal Sudirman No. 89, RT 01/RW 02, Kel. W', 3),
-('Rizka Amelia', '08173456271', 'P', 'Jl. MH Thamrin No. 34, RT 03/RW 04, Kel. Q', 3);
+('Budi Santoso', '081992347561', 'L', 'Jl. Benteng Betawi No. 23, RT 02/RW 03, Kel. Sukasari, Tangerang, Banten', 1),
+('Rina Kartika', '08288811234', 'P', 'Jl. KH Hasyim Ashari No. 12, RT 04/RW 05, Kel. Poris Plawad, Tangerang, Banten', 1),
+('Siti Aisyah', '082117350913', 'P', 'Jl. Maulana Hasanuddin No. 45, RT 06/RW 07, Kel. Cipondoh, Tangerang, Banten', 2),
+('Andi Wijaya', '081275623489', 'L', 'Jl. Jenderal Sudirman No. 89, RT 01/RW 02, Kel. Babakan, Tangerang, Banten', 3),
+('Rizka Amelia', '08173456271', 'P', 'Jl. MH Thamrin No. 34, RT 03/RW 04, Kel. Cikokol, Tangerang, Banten', 3);
 
 INSERT INTO user (nama_lengkap, no_telp, jenis_kelamin)
 VALUES
